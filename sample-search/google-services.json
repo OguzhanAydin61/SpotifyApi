@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "592732248484",
+    "firebase_url": "https://rateyourradio-d2ae8.firebaseio.com",
+    "project_id": "rateyourradio-d2ae8",
+    "storage_bucket": "rateyourradio-d2ae8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592732248484:android:e593ce38fea4099f",
+        "android_client_info": {
+          "package_name": "com.example.oguzhanaydin.rateyoursong"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592732248484-3tcftj4sicvr0gdsod83a39m98pol8qb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.oguzhanaydin.rateyoursong",
+            "certificate_hash": "04f8744ff159184afbfd919e4462ff18f5c04936"
+          }
+        },
+        {
+          "client_id": "592732248484-9c7fu7bt27l68klfhlc8iuhgma8t5jj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOruDmQvHhvC_9_LUpecGjaKvPKlEl-fw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592732248484-9c7fu7bt27l68klfhlc8iuhgma8t5jj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592732248484:android:70a2699cf26a86a4",
+        "android_client_info": {
+          "package_name": "kaaes.spotify.webapi.samplesearch"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592732248484-kvng0or5h98vetjpvg0i4sa29kia65vf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kaaes.spotify.webapi.samplesearch",
+            "certificate_hash": "04f8744ff159184afbfd919e4462ff18f5c04936"
+          }
+        },
+        {
+          "client_id": "592732248484-9c7fu7bt27l68klfhlc8iuhgma8t5jj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOruDmQvHhvC_9_LUpecGjaKvPKlEl-fw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592732248484-9c7fu7bt27l68klfhlc8iuhgma8t5jj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
