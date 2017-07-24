@@ -93,6 +93,50 @@
           "status": 2
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592732248484:android:69c3c999f59eeb88",
+        "android_client_info": {
+          "package_name": "oguzhan.spotify.webapi.RateyourSong"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592732248484-idqavksl014rjhrln5pe9scu5sgucdq0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "oguzhan.spotify.webapi.RateyourSong",
+            "certificate_hash": "04f8744ff159184afbfd919e4462ff18f5c04936"
+          }
+        },
+        {
+          "client_id": "592732248484-9c7fu7bt27l68klfhlc8iuhgma8t5jj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOruDmQvHhvC_9_LUpecGjaKvPKlEl-fw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592732248484-9c7fu7bt27l68klfhlc8iuhgma8t5jj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
     }
   ],
   "configuration_version": "1"
