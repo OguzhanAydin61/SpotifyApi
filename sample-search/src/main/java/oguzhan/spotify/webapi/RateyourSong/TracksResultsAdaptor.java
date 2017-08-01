@@ -41,7 +41,9 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
     private FirebaseDatabase db = FirebaseDatabase.getInstance();
     private DatabaseReference yaz = db.getReference();
     private int oy;
+    private String track;
 
+private int Buttonname=0;
     public TracksResultsAdaptor(Context context, ArrayList<Tracks> tracks) {
 
 
@@ -68,7 +70,7 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
 
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
 
             convertView = inflater.inflate(R.layout.oylama_list_view, null);
@@ -88,15 +90,24 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
         }
 
         Tracks sarki = tracks.get(position);
+        Log.d("position info: ", " "+tracks.get(position));
         if (sarki != null) {
 
             holder.tracksName.setText(sarki.getTracksName());
             holder.tracksAlbum.setText(sarki.getTrackArtist());
-            holder.trackButon.setText("oylama");
+            holder.trackButon.setText("oylama: ");
+            holder.imgview.setImageURI(Uri.parse(sarki.getImageUri()));
+            Picasso.with(context).load(sarki.getImageUri()).into(holder.imgview);
             holder.trackButon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (v.getId() == R.id.oylamaButton) {
+                        Log.d("track.getPosition"," "+ tracks.get(position));
+                        Log.d("position info click: ", " "+tracks.get(position).getTrackid());
+                        Button b = (Button)v;
+
+                        Tracks sarki = tracks.get(position);
+                        String buttonText = b.getText().toString();
                         DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Tracks").child("Oylama");
 
                         ValueEventListener dinle = new ValueEventListener() {
@@ -104,7 +115,7 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
                             public void onDataChange(DataSnapshot dataSnapshot) {
 
 
-                               oy=dataSnapshot.getValue(int.class);
+                                oy = dataSnapshot.getValue(int.class);
                                 Log.i("Oylama Bilgisi", "Oy: " + oy);
 
 
@@ -116,15 +127,18 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
                             }
 
                         };
-                         oku.addValueEventListener(dinle);
+                        oku.addValueEventListener(dinle);
                         oy++;
                         yaz.child("Tracks").child("Oylama").setValue(oy);
+
+
 
                     }
                 }
             });
-            // holder.imgview.setImageURI(sarki.getImageUri());
-            Picasso.with(context).load(sarki.getImageUri()).into(holder.imgview);
+
+
+
 
 
         }
@@ -137,6 +151,7 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
         TextView tracksUrl;
         Button trackButon;
         ImageView imgview;
+
 
     }
 

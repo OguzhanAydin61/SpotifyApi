@@ -12,6 +12,8 @@ import android.widget.Toast;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.*;
+import com.spotify.sdk.android.player.Error;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +25,8 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
-public class LoginActivity extends Activity{
+
+public class LoginActivity extends Activity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
 
@@ -33,10 +36,11 @@ public class LoginActivity extends Activity{
     private static final String REDIRECT_URI = "testschema://callback";
     private Context mContext;
     private static final int REQUEST_CODE = 1337;
+    private SpotifyPlayer mPlayer;
     User userinfo=new User();
     public SpotifyApi api = new SpotifyApi();
     ImageView image ;
-String holdusrID=" boş";
+    String holdusrID=" boş";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +68,7 @@ String holdusrID=" boş";
 
 
     }
-//public void cikisİslem(){
+    //public void cikisİslem(){
 //    final AuthenticationRequest request = new AuthenticationRequest.Builder(CLIENT_ID, AuthenticationResponse.Type.TOKEN, REDIRECT_URI)
 //            .setScopes(new String[]{"playlist-read"})
 //            .build();
@@ -79,7 +83,7 @@ String holdusrID=" boş";
 
         // Check if result comes from the correct activity
         if (requestCode == REQUEST_CODE) {
-           final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+            final AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             switch (response.getType()) {
                 // Response was successful and contains auth token
                 case TOKEN:
@@ -97,15 +101,16 @@ String holdusrID=" boş";
                             holdusrID=userPrivate.id;
 
 
-                        userinfo.setUserid(holdusrID);
-                           Log.d("???? ",userinfo.getUserid());
-                           // Toast.makeText(LoginActivity.this,"User info in StartMainACtive "+holdusrID,Toast.LENGTH_LONG).show();
+                            userinfo.setUserid(holdusrID);
+                            Log.d("???? ",userinfo.getUserid());
+                            // Toast.makeText(LoginActivity.this,"User info in StartMainACtive "+holdusrID,Toast.LENGTH_LONG).show();
                             Log.d("start ",holdusrID);
-                               logMessage("User success and user id:  "+ userPrivate.id);
+                            logMessage("User success and user id:  "+ userPrivate.id);
                             // Toast.makeText(null,userPrivate.country,Toast.LENGTH_LONG);
                             String hold=userPrivate.display_name;
                             if(hold==null||hold=="")
                                 hold="İsim bilgisi yok";
+                            //  mPlayer.playUri(mOperationCallback,"spotify:track:63OUv8mSxyAJidhh1J1MmL",0,0);
 
                             userinfo.sendToFirebaseUserInfo(holdusrID,hold);
                             startMainActivity(response.getAccessToken(),userinfo.getUserid());
@@ -136,7 +141,7 @@ String holdusrID=" boş";
         intent.putExtra(Main2Activity.EXTRA_TOKEN, token);
 
         intent.putExtra("isim",usr);
-      startActivity(intent);
+        startActivity(intent);
       finish();
     }
 
@@ -149,4 +154,17 @@ String holdusrID=" boş";
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         Log.d(TAG, msg);
     }
+    private final com.spotify.sdk.android.player.Player.OperationCallback mOperationCallback = new com.spotify.sdk.android.player.Player.OperationCallback() {
+        @Override
+        public void onSuccess() {
+
+        }
+
+        @Override
+        public void onError(Error error) {
+
+        }
+    };
+
+
 }

@@ -41,7 +41,7 @@ SearchPresenter cal;
     private SearchResultsAdapter mAdapter;
     private static Context mContext;
 
-    PreviewPlayer playing;
+
     public SpotifyApi api = new SpotifyApi();
 
     private class ScrollListener extends ResultListScrollListener {
