@@ -42,16 +42,7 @@
             android:text="gjhgg"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <TextView
-            android:id="@+id/Urlname"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:ellipsize="marquee"
-            android:gravity="top"
-            android:maxLines="1"
-            android:scrollHorizontally="true"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -59,16 +50,26 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
 
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
 
         <Button
             android:id="@+id/oylamaButton"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:scrollHorizontally="true" />
-
+        <TextView
+            android:id="@+id/OyShow"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:ellipsize="marquee"
+            android:gravity="top"
+            android:maxLines="1"
+            android:scrollHorizontally="true"
+            android:text="kjpıppb"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 
 
