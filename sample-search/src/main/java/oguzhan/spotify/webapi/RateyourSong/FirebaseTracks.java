@@ -8,10 +8,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Date;
 
 /**
  * Created by oguzhanaydin on 24.07.2017.
@@ -19,16 +16,21 @@ import java.util.Map;
 
 public class FirebaseTracks {
     private int oySayisi;
-  private int holdTrackvalue=0;
-    private boolean flag;
+    private int holdTrackvalue = 0;
+    private static boolean control;
     private int Trackid;
     private String TracksUrl;
+    private FirebaseDatabase db = FirebaseDatabase.getInstance();
+    private DatabaseReference yaz = db.getReference();
+    static int oy;
+    static long flag;
 
-    public void setTrackid(int Trackid){
-        this.Trackid=Trackid;
+    public void setTrackid(int Trackid) {
+        this.Trackid = Trackid;
 
     }
-    public int getTrackid(){
+
+    public int getTrackid() {
         return Trackid;
     }
 
@@ -41,44 +43,56 @@ public class FirebaseTracks {
         return TracksUrl;
     }
 
+    public void isTime() {
 
-    public String Trackplay(int Tracksize) {
 
-        for (int i = 0; i < Tracksize; i++) {
-            Log.d("Trackplay", "Working +" + i);
-            flag = false;
-            DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Tracks").child("id:" + i).child("Oylama");
 
-            ValueEventListener dinle = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (holdTrackvalue < dataSnapshot.getValue(int.class)) {
-                        holdTrackvalue = dataSnapshot.getValue(int.class);
-                        Log.i("Oylama sonuclari: ", holdTrackvalue + " adet oy");
 
-                        flag = true;
-                    }
-                }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
 
-                }
-            };
-            oku.addValueEventListener(dinle);
-            if(flag){
-                Log.d("Track indis","indis: "+i);
-                setTrackid(i);
-            }
-        }
-        Log.d("getTrackid", " " + getTrackid());
-        DatabaseReference oku2 = FirebaseDatabase.getInstance().getReference().child("Tracks").child("id:" + 11).child("Track");
+
+
+    }
+
+    public void Trackplay(final int Tracksize, final String trID) {
+
+
+        Log.d("trID:", "" + trID);
+
+        DatabaseReference oku2 = FirebaseDatabase.getInstance().getReference().child("Users").child(trID);
 
         ValueEventListener dinle2 = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d("Caliyor...", "Track: " + dataSnapshot.getValue(String.class));
-                setTracksUrl(dataSnapshot.getValue(String.class));
+                Log.d("data child count ", "" + dataSnapshot.getChildrenCount());
+
+
+                Log.d("flag status: ", "" + dataSnapshot.getChildrenCount());
+
+
+                if (dataSnapshot.getChildrenCount() < 3) {
+                    yaz.child("Users").child(trID).child("id").setValue(Tracksize);
+                    DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Tracks").child("" + Tracksize).child("oylama");
+                    ValueEventListener listen = new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            oy = dataSnapshot.getValue(int.class);
+                            Log.i("Oylama Bilgisi", "Oy: " + dataSnapshot.getValue(int.class));
+                            TrackID.oySonucu = oy;
+                            Log.d("sonOy: ", "" + oy);
+                            oy++;
+                            yaz.child("Tracks").child("" + Tracksize).child("oylama").setValue(oy);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    };
+                    oku.addListenerForSingleValueEvent(listen);
+
+
+                }
             }
 
             @Override
@@ -86,10 +100,31 @@ public class FirebaseTracks {
 
             }
         };
-        oku2.addValueEventListener(dinle2);
+        oku2.addListenerForSingleValueEvent(dinle2);
 
-        Log.d("donen sarki",getTracksUrl());
-        return getTracksUrl();
+
     }
+
+    public void UseridRemove(final int Tracksize, final String trID) {
+
+        DatabaseReference oku2 = FirebaseDatabase.getInstance().getReference().child("Users").child(trID);
+
+        ValueEventListener dinle = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+
+        };
+    }
+public void PlayMusic(){
+
+}
 
 }

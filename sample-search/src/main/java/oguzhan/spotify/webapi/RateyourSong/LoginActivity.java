@@ -9,12 +9,19 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.*;
 import com.spotify.sdk.android.player.Error;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import oguzhan.spotify.webapi.android.SpotifyApi;
@@ -23,7 +30,6 @@ import oguzhan.spotify.webapi.android.models.UserPrivate;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-
 
 
 public class LoginActivity extends Activity {
@@ -36,26 +42,30 @@ public class LoginActivity extends Activity {
     private static final String REDIRECT_URI = "testschema://callback";
     private Context mContext;
     private static final int REQUEST_CODE = 1337;
-    private SpotifyPlayer mPlayer;
-    User userinfo=new User();
+    public static String tr;
+    User userinfo = new User();
+
     public SpotifyApi api = new SpotifyApi();
-    ImageView image ;
-    String holdusrID=" boş";
+    ImageView image;
+    String holdusrID = " boş";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent=getIntent();
+        Intent intent = getIntent();
 
         String token = CredentialsHandler.getToken(this);
 
-        if(token!=null)
-            token=intent.getStringExtra("Token");
+        if (token != null)
+            token = intent.getStringExtra("Token");
 
 
         if (token == null) {
             setContentView(R.layout.activity_login);
         } else {
-            startMainActivity(token,holdusrID);
+            TrackID sendID = (TrackID) getApplicationContext();
+            sendID.setTrackid(holdusrID);
+            startMainActivity(token, holdusrID);
         }
     }
 
@@ -66,8 +76,8 @@ public class LoginActivity extends Activity {
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
 
-
     }
+
     //public void cikisİslem(){
 //    final AuthenticationRequest request = new AuthenticationRequest.Builder(CLIENT_ID, AuthenticationResponse.Type.TOKEN, REDIRECT_URI)
 //            .setScopes(new String[]{"playlist-read"})
@@ -87,7 +97,7 @@ public class LoginActivity extends Activity {
             switch (response.getType()) {
                 // Response was successful and contains auth token
                 case TOKEN:
-                    logMessage("   Got token: " +response.getAccessToken());
+                    logMessage("   Got token: " + response.getAccessToken());
                     CredentialsHandler.setToken(this, response.getAccessToken(), response.getExpiresIn(), TimeUnit.SECONDS);
 
 
@@ -98,22 +108,22 @@ public class LoginActivity extends Activity {
                         public void success(UserPrivate userPrivate, Response responsess) {
 //      usrId=userPrivate.id;
 
-                            holdusrID=userPrivate.id;
+                            holdusrID = userPrivate.id;
 
 
                             userinfo.setUserid(holdusrID);
-                            Log.d("???? ",userinfo.getUserid());
+                            Log.d("???? ", userinfo.getUserid());
                             // Toast.makeText(LoginActivity.this,"User info in StartMainACtive "+holdusrID,Toast.LENGTH_LONG).show();
-                            Log.d("start ",holdusrID);
-                            logMessage("User success and user id:  "+ userPrivate.id);
+                            Log.d("start ", holdusrID);
+                            logMessage("User success and user id:  " + userPrivate.id);
                             // Toast.makeText(null,userPrivate.country,Toast.LENGTH_LONG);
-                            String hold=userPrivate.display_name;
-                            if(hold==null||hold=="")
-                                hold="İsim bilgisi yok";
+                            String hold = userPrivate.display_name;
+                            if (hold == null || hold == "")
+                                hold = "İsim bilgisi yok";
                             //  mPlayer.playUri(mOperationCallback,"spotify:track:63OUv8mSxyAJidhh1J1MmL",0,0);
 
-                            userinfo.sendToFirebaseUserInfo(holdusrID,hold);
-                            startMainActivity(response.getAccessToken(),userinfo.getUserid());
+                            userinfo.sendToFirebaseUserInfo(holdusrID, hold);
+                            startMainActivity(response.getAccessToken(), userinfo.getUserid());
                         }
 
                         @Override
@@ -135,14 +145,14 @@ public class LoginActivity extends Activity {
             }
         }
     }
-
-    private void startMainActivity(String token,String usr) {
+       private void startMainActivity(String token, String usr) {
         Intent intent = Main2Activity.createIntent(this);
         intent.putExtra(Main2Activity.EXTRA_TOKEN, token);
+        intent.putExtra("isim", usr);
+        tr = usr;
 
-        intent.putExtra("isim",usr);
         startActivity(intent);
-      finish();
+        finish();
     }
 
     private void logError(String msg) {
@@ -154,6 +164,7 @@ public class LoginActivity extends Activity {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         Log.d(TAG, msg);
     }
+
     private final com.spotify.sdk.android.player.Player.OperationCallback mOperationCallback = new com.spotify.sdk.android.player.Player.OperationCallback() {
         @Override
         public void onSuccess() {

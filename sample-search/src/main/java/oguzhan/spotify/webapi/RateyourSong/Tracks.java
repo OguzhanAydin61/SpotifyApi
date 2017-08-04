@@ -23,6 +23,7 @@ public class Tracks implements Parcelable {
     private int Trackid;
     private String TracksUrl;
     private String TracksName;
+    private String Trackoy;
     private String TrackArtist;
 
     private String imageURL;
@@ -44,7 +45,7 @@ public class Tracks implements Parcelable {
         TrackArtist = in.readString();
         imageURL = in.readString();
         oylama = in.readInt();
-
+        Trackid = in.readInt();
     }
 
     public static final Creator<Tracks> CREATOR = new Creator<Tracks>() {
@@ -91,8 +92,8 @@ public class Tracks implements Parcelable {
         return Trackid;
     }
 
-    public Tracks(String TracksUrl, String TracksName, String TrackArtist, String imageURL, int oylama) {
-
+    public Tracks(String TracksUrl, String TracksName, String TrackArtist, String imageURL, int oylama, int Trackid) {
+        this.Trackid = Trackid;
         this.TrackArtist = TrackArtist;
         this.TracksUrl = TracksUrl;
         this.TracksName = TracksName;
@@ -245,5 +246,6 @@ public class Tracks implements Parcelable {
         dest.writeString(TrackArtist);
 //        dest.writeParcelable(imageURL, flags);
         dest.writeInt(oylama);
+        dest.writeInt(Trackid);
     }
 }

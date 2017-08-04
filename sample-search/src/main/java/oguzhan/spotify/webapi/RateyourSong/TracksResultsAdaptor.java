@@ -1,6 +1,8 @@
 package oguzhan.spotify.webapi.RateyourSong;
 
+import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -42,8 +44,9 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
     private DatabaseReference yaz = db.getReference();
     private int oy;
     private String track;
+    private int Buttonname = 0;
+    private Context mContext;
 
-private int Buttonname=0;
     public TracksResultsAdaptor(Context context, ArrayList<Tracks> tracks) {
 
 
@@ -71,6 +74,7 @@ private int Buttonname=0;
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
+
         if (convertView == null) {
 
             convertView = inflater.inflate(R.layout.oylama_list_view, null);
@@ -78,7 +82,7 @@ private int Buttonname=0;
             holder = new ViewHolder();
             holder.tracksName = (TextView) convertView.findViewById(R.id.SongName);
             holder.tracksAlbum = (TextView) convertView.findViewById(R.id.AlbumName);
-            holder.tracksUrl = (TextView) convertView.findViewById(R.id.Urlname);
+            //  holder.trackOy = (TextView) convertView.findViewById(R.id.OyShow);
             holder.trackButon = (Button) convertView.findViewById(R.id.oylamaButton);
             holder.imgview = (ImageView) convertView.findViewById(R.id.resimler);
             convertView.setTag(holder);
@@ -90,55 +94,48 @@ private int Buttonname=0;
         }
 
         Tracks sarki = tracks.get(position);
-        Log.d("position info: ", " "+tracks.get(position));
+        Log.d("position info: ", " " + tracks.get(position));
         if (sarki != null) {
 
             holder.tracksName.setText(sarki.getTracksName());
             holder.tracksAlbum.setText(sarki.getTrackArtist());
+//            holder.trackOy.setText(sarki.getOylama());
             holder.trackButon.setText("oylama: ");
-            holder.imgview.setImageURI(Uri.parse(sarki.getImageUri()));
-            Picasso.with(context).load(sarki.getImageUri()).into(holder.imgview);
+            Log.d("getImage: ", sarki.getImageUri());
+            if (sarki.getImageUri() == null) {
+
+            } else {
+
+
+                    holder.imgview.setImageURI(Uri.parse(sarki.getImageUri()));
+                    Picasso.with(context).load(sarki.getImageUri()).into(holder.imgview);
+
+
+            }
             holder.trackButon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    FirebaseTracks oyla = new FirebaseTracks();
+                    String f = LoginActivity.tr;
+                    Log.d("fDegeri", "" + f);
+//                    String deneme = "songulaydin61";
+//                    final String trID = deneme;
+//
                     if (v.getId() == R.id.oylamaButton) {
-                        Log.d("track.getPosition"," "+ tracks.get(position));
-                        Log.d("position info click: ", " "+tracks.get(position).getTrackid());
-                        Button b = (Button)v;
-
-                        Tracks sarki = tracks.get(position);
-                        String buttonText = b.getText().toString();
-                        DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Tracks").child("Oylama");
-
-                        ValueEventListener dinle = new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
 
 
-                                oy = dataSnapshot.getValue(int.class);
-                                Log.i("Oylama Bilgisi", "Oy: " + oy);
+                        Log.d("track.getPosition", " " + tracks.get(position));
+                        Log.d("position info click: ", " " + tracks.get(position).getTrackid());
+                        int hold = tracks.get(position).getTrackid();
 
-
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-
-                        };
-                        oku.addValueEventListener(dinle);
-                        oy++;
-                        yaz.child("Tracks").child("Oylama").setValue(oy);
-
+                        oyla.Trackplay(hold, f);
+                        int al = TrackID.oySonucu;
 
 
                     }
                 }
             });
-
-
-
 
 
         }
@@ -148,7 +145,7 @@ private int Buttonname=0;
     private static class ViewHolder {
         TextView tracksName;
         TextView tracksAlbum;
-        TextView tracksUrl;
+        TextView trackOy;
         Button trackButon;
         ImageView imgview;
 

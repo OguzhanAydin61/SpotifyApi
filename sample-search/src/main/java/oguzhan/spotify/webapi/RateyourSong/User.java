@@ -1,5 +1,7 @@
 package oguzhan.spotify.webapi.RateyourSong;
 
+import android.app.Application;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -11,6 +13,7 @@ public class User {
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference myRef = database.getReference();
     private String userid;
+    private String trackid;
 
     public void setUserid(String userid){
 
@@ -24,12 +27,8 @@ public class User {
     public void sendToFirebaseUserInfo(String userid,String name){
 
 //        String keyvalue=myRef.push().getKey();
-        myRef.child("Users").child(userid).setValue(name);
-
-
-
+        myRef.child("Users").child(userid).child("isim").setValue(name);
 
     }
-
 
 }
