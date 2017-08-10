@@ -71,7 +71,7 @@ public class LoginActivity extends Activity {
 
     public void onLoginButtonClicked(View view) {
         final AuthenticationRequest request = new AuthenticationRequest.Builder(CLIENT_ID, AuthenticationResponse.Type.TOKEN, REDIRECT_URI)
-                .setScopes(new String[]{"playlist-read"})
+                .setScopes(new String[]{"user-read-private", "playlist-read", "playlist-read-private", "streaming"})
                 .build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
@@ -99,7 +99,7 @@ public class LoginActivity extends Activity {
                 case TOKEN:
                     logMessage("   Got token: " + response.getAccessToken());
                     CredentialsHandler.setToken(this, response.getAccessToken(), response.getExpiresIn(), TimeUnit.SECONDS);
-
+                    response.getAccessToken();
 
                     api.setAccessToken(response.getAccessToken());
                     SpotifyService sp = api.getService();
@@ -118,11 +118,14 @@ public class LoginActivity extends Activity {
                             logMessage("User success and user id:  " + userPrivate.id);
                             // Toast.makeText(null,userPrivate.country,Toast.LENGTH_LONG);
                             String hold = userPrivate.display_name;
+
                             if (hold == null || hold == "")
                                 hold = "İsim bilgisi yok";
                             //  mPlayer.playUri(mOperationCallback,"spotify:track:63OUv8mSxyAJidhh1J1MmL",0,0);
 
                             userinfo.sendToFirebaseUserInfo(holdusrID, hold);
+
+
                             startMainActivity(response.getAccessToken(), userinfo.getUserid());
                         }
 
@@ -145,9 +148,12 @@ public class LoginActivity extends Activity {
             }
         }
     }
-       private void startMainActivity(String token, String usr) {
-        Intent intent = Main2Activity.createIntent(this);
+
+    private void startMainActivity(String token, String usr) {
+        final Intent intent = Main2Activity.createIntent(this);
         intent.putExtra(Main2Activity.EXTRA_TOKEN, token);
+
+
         intent.putExtra("isim", usr);
         tr = usr;
 

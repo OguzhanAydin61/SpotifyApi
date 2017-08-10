@@ -23,8 +23,9 @@ public class Tracks implements Parcelable {
     private int Trackid;
     private String TracksUrl;
     private String TracksName;
-    private String Trackoy;
+
     private String TrackArtist;
+    private long durationTime;
 
     private String imageURL;
     private int holdTrackvalue = 0;
@@ -46,6 +47,7 @@ public class Tracks implements Parcelable {
         imageURL = in.readString();
         oylama = in.readInt();
         Trackid = in.readInt();
+        durationTime = in.readLong();
     }
 
     public static final Creator<Tracks> CREATOR = new Creator<Tracks>() {
@@ -59,6 +61,14 @@ public class Tracks implements Parcelable {
             return new Tracks[size];
         }
     };
+
+    public void setDurationTime(long durationTime) {
+        this.durationTime = durationTime;
+    }
+
+    public long getDurationTime() {
+        return durationTime;
+    }
 
     public void setTracksUrl(String TracksUrl) {
         this.TracksUrl = TracksUrl;
@@ -92,13 +102,14 @@ public class Tracks implements Parcelable {
         return Trackid;
     }
 
-    public Tracks(String TracksUrl, String TracksName, String TrackArtist, String imageURL, int oylama, int Trackid) {
+    public Tracks(String TracksUrl, String TracksName, String TrackArtist, String imageURL, int oylama, int Trackid, long durationTime) {
         this.Trackid = Trackid;
         this.TrackArtist = TrackArtist;
         this.TracksUrl = TracksUrl;
         this.TracksName = TracksName;
         this.imageURL = imageURL;
         this.oylama = oylama;
+        this.durationTime = durationTime;
 
     }
 
@@ -247,5 +258,6 @@ public class Tracks implements Parcelable {
 //        dest.writeParcelable(imageURL, flags);
         dest.writeInt(oylama);
         dest.writeInt(Trackid);
+        dest.writeLong(durationTime);
     }
 }

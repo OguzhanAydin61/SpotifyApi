@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.media.Image;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,7 +47,8 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
     private int oy;
     private String track;
     private int Buttonname = 0;
-    private Context mContext;
+    private Context mContext = getContext();
+    public static boolean isEnable = true;
 
     public TracksResultsAdaptor(Context context, ArrayList<Tracks> tracks) {
 
@@ -54,6 +57,15 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
         this.context = context;
         this.tracks = tracks;
         inflater = LayoutInflater.from(context);
+    }
+
+    public void setIsEnable(boolean isEnable) {
+        this.isEnable = isEnable;
+      //  notifyDataSetChanged();
+    }
+
+    public boolean getIsEnable() {
+        return isEnable;
     }
 
     @Override
@@ -85,13 +97,16 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
             //  holder.trackOy = (TextView) convertView.findViewById(R.id.OyShow);
             holder.trackButon = (Button) convertView.findViewById(R.id.oylamaButton);
             holder.imgview = (ImageView) convertView.findViewById(R.id.resimler);
+
             convertView.setTag(holder);
 
 
         } else {
 
             holder = (ViewHolder) convertView.getTag();
+
         }
+       //  holder.trackButon.setEnabled(isEnable);
 
         Tracks sarki = tracks.get(position);
         Log.d("position info: ", " " + tracks.get(position));
@@ -105,17 +120,14 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
             if (sarki.getImageUri() == null) {
 
             } else {
-
-
-                    holder.imgview.setImageURI(Uri.parse(sarki.getImageUri()));
-                    Picasso.with(context).load(sarki.getImageUri()).into(holder.imgview);
-
-
+                holder.imgview.setImageURI(Uri.parse(sarki.getImageUri()));
+                Picasso.with(context).load(sarki.getImageUri()).into(holder.imgview);
             }
             holder.trackButon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
+                      if (isEnable) {
                     FirebaseTracks oyla = new FirebaseTracks();
                     String f = LoginActivity.tr;
                     Log.d("fDegeri", "" + f);
@@ -123,18 +135,23 @@ public class TracksResultsAdaptor extends ArrayAdapter<Tracks> {
 //                    final String trID = deneme;
 //
                     if (v.getId() == R.id.oylamaButton) {
-
-
                         Log.d("track.getPosition", " " + tracks.get(position));
                         Log.d("position info click: ", " " + tracks.get(position).getTrackid());
                         int hold = tracks.get(position).getTrackid();
 
                         oyla.Trackplay(hold, f);
                         int al = TrackID.oySonucu;
-
-
+                        //    holder.trackButon.setBackgroundColor(Color.WHITE);
+                       //  holder.trackButon.setEnabled(false);
                     }
-                }
+
+                  isEnable = false;
+//                    notifyDataSetChanged();
+                }else {Toast.makeText(mContext,"Zaten Oy verdiniz ",Toast.LENGTH_SHORT).show();
+                          //TODO mesaj göster oy kullandınız
+                            }
+
+                      }
             });
 
 

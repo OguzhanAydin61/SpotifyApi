@@ -16,6 +16,7 @@ import android.os.IBinder;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.spotify.sdk.android.player.PlaybackState;
 
@@ -26,6 +27,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -66,7 +68,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.http.Headers;
 
-public class Main2Activity extends AppCompatActivity implements Player.NotificationCallback {
+public class Main2Activity extends AppCompatActivity implements Player.NotificationCallback, ConnectionStateCallback {
     public static final String TAG = "Main2Activity";
     private ArrayList<Tracks> tracks;
     private ListView listView;
@@ -76,14 +78,22 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
     private Button exit;
     private Tracks sarkilar = new Tracks();
     private BroadcastReceiver mNetworkStateReceiver;
-    private int holdTrackvalue = 0;
+    private static int holdTrackvalue = 0;
     private FirebaseDatabase db = FirebaseDatabase.getInstance();
     private DatabaseReference yaz = db.getReference();
     private MediaPlayer mediaPlayer;
+    private static String nowPlay = " ";
     private Context mContext;
+    final GenericTypeIndicator<List<Tracks>> t = new GenericTypeIndicator<List<Tracks>>() {
+    };
+    private static int sayac;
     private String usr;
     private int size;
-    private String hold;
+    private static String hold;
+    private static String holdUserid;
+    private List<Tracks> tracksList;
+
+    private FirebaseTracks deneme = new FirebaseTracks();
     private int ara;
     private String token;
     private Metadata mMetadata;
@@ -95,7 +105,13 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
     private PlaybackState mCurrentPlaybackState;
     private SpotifyPlayer mPlayer;
     private String playlistURl;
+    private static int tracksizeHold;
+    private static boolean bayrak;
+    private static boolean flagControlPlayer = false;
+    private static int cik = 0;
 
+    private static long durationTime;
+    Thread thread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +123,7 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
         mContext = getApplicationContext();
         exit = (Button) findViewById(R.id.Exitbutton);
         usr = intent.getStringExtra("isim");
+        holdUserid = usr;
         Log.d("isimStart ", usr);
         SpotifyApi spotifyApi = new SpotifyApi();
         spotifyApi.setAccessToken(token);
@@ -117,7 +134,7 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
         //spotify:track:0R0JMH92qc5mepN2if6lhU
         play(token);
 
-
+        bayrak = false;
         playlistURl = "37i9dQZF1DXd8Yptw1g5FC";
         mService.getUser(usr, new Callback<UserPublic>() {
             @Override
@@ -169,247 +186,6 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
         });
 
 
-        DatabaseReference oku3 = FirebaseDatabase.getInstance().getReference().child("Size");
-        oku3.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d("Oylama size", " " + dataSnapshot.getValue(int.class));
-
-                for (int i = 0; i < dataSnapshot.getValue(int.class); i++) {
-                    final int j = i;
-
-                    DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Tracks").child("" + i).child("oylama");
-
-                    oku.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-
-                            if (holdTrackvalue < dataSnapshot.getValue(int.class)) {
-                                holdTrackvalue = dataSnapshot.getValue(int.class);
-                                Log.d("Oylama sonuclari: ", holdTrackvalue + " adet oy");
-                                int i1 = j;
-                                Log.d("jDeger: ", "" + j);
-                                sarkilar.setTrackid(i1);
-                                Log.d("getTrackid degeri", " " + sarkilar.getTrackid());
-
-                                DatabaseReference oku2 = FirebaseDatabase.getInstance().getReference().child("Tracks").child("" + sarkilar.getTrackid()).child("tracksUrl");
-
-                                ValueEventListener dinle2 = new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        Log.d("Caliyor...", "Track: " + dataSnapshot.getValue(String.class));
-                                        sarkilar.setTracksUrl(dataSnapshot.getValue(String.class));
-                                        hold = dataSnapshot.getValue(String.class);
-                                        sarkilar.setTracksUrl(hold);
-                                        DatabaseReference oku4 = FirebaseDatabase.getInstance().getReference().child("Time");
-
-                                        ValueEventListener timeListen = new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot2) {
-
-                                                Log.d("time child count", "" + dataSnapshot2.getChildrenCount());
-
-                                                if (dataSnapshot2.getChildrenCount() < 1) {
-                                                    Date minute = Calendar.getInstance().getTime();
-                                                    yaz.child("Time").child("seekTime").setValue(minute.getTime());
-                                                    difference = 0;
-                                                    Log.d("controll is ", "null");
-
-                                                } else {
-
-                                                    Date endTime = Calendar.getInstance().getTime();
-                                                    long start = dataSnapshot2.child("seekTime").getValue(long.class);
-                                                    difference = endTime.getTime() - start;
-
-                                                    long diffsecond = difference / 1000 % 60;
-                                                    long differenceMinutes = difference / (60 * 1000) % 60;
-                                                    difference = (differenceMinutes * 60) + diffsecond;
-                                                    Log.d("controll is ", "not null minute" + differenceMinutes + " second " + diffsecond);
-                                                }
-
-
-                                                Log.d("seekTime", "" + difference);
-                                                Log.d("seektime then uri", " " + hold);
-                                                mPlayer.playUri(mOperationCallback, hold, 0, 0);
-                                                try {
-                                                    Thread.sleep(10);
-                                                } catch (InterruptedException e) {
-                                                    e.printStackTrace();
-                                                }
-                                                mPlayer.seekToPosition(mOperationCallback,1000*(int)difference);
-
-
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-
-                                            }
-                                        };
-                                        oku4.addListenerForSingleValueEvent(timeListen);
-
-
-
-
-                                        Log.d("mPlayer:", "" + mPlayer.isShutdown() + " " + mPlayer.isLoggedIn());
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                };
-                                oku2.addValueEventListener(dinle2);
-
-
-                                Log.d("TrackUrl ", "getTrackUrl: " + sarkilar.getTracksUrl());
-
-                            }
-
-
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-    }
-    public void playSong() {
-        DatabaseReference oku3 = FirebaseDatabase.getInstance().getReference().child("Size");
-        oku3.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d("Oylama size", " " + dataSnapshot.getValue(int.class));
-
-                for (int i = 0; i < dataSnapshot.getValue(int.class); i++) {
-                    final int j = i;
-
-                    DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Tracks").child("" + i).child("oylama");
-
-                    oku.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-
-                            if (holdTrackvalue < dataSnapshot.getValue(int.class)) {
-                                holdTrackvalue = dataSnapshot.getValue(int.class);
-                                Log.d("Oylama sonuclari: ", holdTrackvalue + " adet oy");
-                                int i1 = j;
-                                Log.d("jDeger: ", "" + j);
-                                sarkilar.setTrackid(i1);
-                                Log.d("getTrackid degeri", " " + sarkilar.getTrackid());
-
-                                DatabaseReference oku2 = FirebaseDatabase.getInstance().getReference().child("Tracks").child("" + sarkilar.getTrackid()).child("tracksUrl");
-
-                                ValueEventListener dinle2 = new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-                                        Log.d("Caliyor...", "Track: " + dataSnapshot.getValue(String.class));
-                                        sarkilar.setTracksUrl(dataSnapshot.getValue(String.class));
-                                        hold = dataSnapshot.getValue(String.class);
-                                        sarkilar.setTracksUrl(hold);
-                                        DatabaseReference oku4 = FirebaseDatabase.getInstance().getReference().child("Time");
-
-                                        ValueEventListener timeListen = new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot2) {
-
-                                                Log.d("time child count", "" + dataSnapshot2.getChildrenCount());
-
-                                                if (dataSnapshot2.getChildrenCount() < 1) {
-                                                    Date minute = Calendar.getInstance().getTime();
-                                                    yaz.child("Time").child("seekTime").setValue(minute.getTime());
-                                                    difference = 0;
-                                                    Log.d("controll is ", "null");
-
-                                                } else {
-
-                                                    Date endTime = Calendar.getInstance().getTime();
-                                                    long start = dataSnapshot2.child("seekTime").getValue(long.class);
-                                                    difference = endTime.getTime() - start;
-
-                                                    long diffsecond = difference / 1000 % 60;
-                                                    long differenceMinutes = difference / (60 * 1000) % 60;
-                                                    difference = (differenceMinutes * 60) + diffsecond;
-                                                    Log.d("controll is ", "not null minute" + differenceMinutes + " second " + diffsecond);
-                                                }
-
-
-                                                Log.d("seekTime", "" + difference);
-                                                Log.d("seektime then uri", " " + hold);
-                                                mPlayer.playUri(mOperationCallback, hold, 0, 0);
-                                                try {
-                                                    Thread.sleep(10);
-                                                } catch (InterruptedException e) {
-                                                    e.printStackTrace();
-                                                }
-                                                mPlayer.seekToPosition(mOperationCallback,1000*(int)difference);
-
-
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-
-                                            }
-                                        };
-                                        oku4.addListenerForSingleValueEvent(timeListen);
-
-
-
-
-                                        Log.d("mPlayer:", "" + mPlayer.isShutdown() + " " + mPlayer.isLoggedIn());
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                };
-                                oku2.addValueEventListener(dinle2);
-
-
-                                Log.d("TrackUrl ", "getTrackUrl: " + sarkilar.getTracksUrl());
-
-                            }
-
-
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
         mNetworkStateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -425,10 +201,223 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
         registerReceiver(mNetworkStateReceiver, filter);
         if (mPlayer != null) {
             mPlayer.addNotificationCallback(Main2Activity.this);
-
+            mPlayer.addConnectionStateCallback(Main2Activity.this);
         }
         boolean playing = (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying);
         Log.i("Playing status: ", "Song: " + playing);
+        deneme.setFlag(false);
+        DatabaseReference read = FirebaseDatabase.getInstance().getReference().child("Size");
+        ValueEventListener readListen = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                int SIZE = dataSnapshot.getValue(int.class);
+                Log.d("Size first play", " " + SIZE);
+
+                playSong(SIZE);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        read.addListenerForSingleValueEvent(readListen);
+
+
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
+
+
+    public void playSong(final int OylamaSize) {
+
+        Log.d("Girdi", "playSong");
+        Log.d("Girdi2 ", "size " + OylamaSize);
+
+
+        DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Tracks");
+
+        ValueEventListener dinliyorum = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                tracksList = dataSnapshot.getValue(t);
+
+                for (int i = 0; i < OylamaSize; i++) {
+                    final int j = i;
+                    if (holdTrackvalue < dataSnapshot.child("" + i).child("oylama").getValue(int.class)) {
+                        holdTrackvalue = dataSnapshot.child("" + i).child("oylama").getValue(int.class);
+                        Log.d("Oylama sonuclari: ", holdTrackvalue + " adet oy");
+
+                        Log.d("jDeger: ", "" + j);
+                        sarkilar.setTrackid(j);
+                        Log.d("getTrackid degeri", " " + sarkilar.getTrackid());
+                        sarkilar.setTracksUrl(dataSnapshot.child("" + j).child("tracksUrl").getValue(String.class));
+                        Log.d("Caliyor...", "Track: " + dataSnapshot.child("" + j).child("tracksUrl").getValue(String.class));
+                        hold = dataSnapshot.child("" + j).child("tracksUrl").getValue(String.class);
+                        sarkilar.setTracksUrl(hold);
+                        durationTime = dataSnapshot.child("" + j).child("durationTime").getValue(long.class);
+                        bayrak = true;
+
+                    }
+
+                }
+                Log.d("bayrakCalisiyor", "bayrak");
+                Log.d("bayrak", "" + bayrak);
+                if (bayrak) {
+                    Log.d("bayrakCalisiyor", "bayrak");
+
+
+                    zaman(OylamaSize);
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+        };
+        oku.addListenerForSingleValueEvent(dinliyorum);
+        Log.d("bayrak2", " " + bayrak);
+
+
+    }
+
+    private void zaman(final int sizeINFO) {
+
+        final long hold2;
+        DatabaseReference oku4 = FirebaseDatabase.getInstance().getReference().child("Time");
+        Log.d("Time", "Girdi");
+        ValueEventListener timeListen = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot2) {
+                Date endTime2 = Calendar.getInstance().getTime();
+                Log.d("dataSonuc",""+dataSnapshot2.hasChild("seekTime"));
+                if (!dataSnapshot2.hasChild("seekTime"))
+                {  //Log.d("SongRemove:", ""+dataSnapshot2.child("seekTime").getValue(long.class)+ durationTime+"  "+endTime2.getTime());
+                   // if (dataSnapshot2.child("seekTime").getValue(long.class)+ durationTime <  (endTime2.getTime())) {
+
+                        Log.d("Song", "Remove");
+
+                      }
+
+
+
+                Log.d("playsong sayac2", " " + sayac++);
+                Log.d("timeChildCount", "" + dataSnapshot2.getChildrenCount());
+
+                if (dataSnapshot2.getChildrenCount() < 1) {
+                    Date minute = Calendar.getInstance().getTime();
+                    yaz.child("Time").child("seekTime").setValue(minute.getTime());
+                    Log.d("durationTime", "" + durationTime);
+                    yaz.child("Time").child("durationTime").setValue(durationTime);
+
+                    difference = 0;
+                    Log.d("controll is ", "null");
+
+
+                } else {
+
+                    Date endTime = Calendar.getInstance().getTime();
+                    long start = dataSnapshot2.child("seekTime").getValue(long.class);
+                    long endtimer = endTime.getTime();
+                    difference = endtimer - start;
+
+                    Log.d("startTime", "" + start);
+                    Log.d("startendTime", "" + endtimer);
+                    long diffsecond = difference / 1000 % 60;
+                    long differenceMinutes = difference / (60 * 1000) % 60;
+                    //  difference = (differenceMinutes * 60) + diffsecond;
+                    Log.d("controll is ", "not null minute" + differenceMinutes + " second " + diffsecond);
+                }
+
+                Log.d("seekTime", "" + difference);
+                Log.d("seektime then uri", " " + hold);
+                playerSet(difference, durationTime,sizeINFO);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        oku4.addListenerForSingleValueEvent(timeListen);
+
+    }
+
+    private void playerSet(final long difference2, final long sarkiTime,final int sizeINFO) {
+        Log.d("GelenDiffTime", "" + difference2);
+        Log.d("GelensarkiTİme", "" + sarkiTime);
+        if (difference2 > sarkiTime) {
+
+        }
+        DatabaseReference readTosong = FirebaseDatabase.getInstance().getReference().child("Song");
+        ValueEventListener listenToSong = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                nowPlay = dataSnapshot.child("Track").getValue(String.class);
+                if (null == dataSnapshot.child("Track").getValue(String.class)) {
+                    deneme.VoteRemove(tracksizeHold);
+                    Log.d("if null", "hold:" + hold + " data:" + dataSnapshot.child("Track").getValue(String.class));
+                    if (dataSnapshot.getChildrenCount() < 1) {
+
+                        Log.d("yazilanSong", " " + hold);
+                        yaz.child("Song").child("Track").setValue(hold);
+                        mPlayer.playUri(mOperationCallback, hold, 0, 0);
+                        Log.d("difference2", " " + difference2);
+                        if (difference2 > 0)
+                            mPlayer.seekToPosition(mOperationCallback, (int) difference2);
+
+
+                    } else {
+                        Log.d("difference2", " " + difference2);
+
+                    }
+                } else if (dataSnapshot.child("Track").getValue(String.class) == hold) {
+                    Log.d("büyükElseIF ==:", "hold:" + hold + " data:" + dataSnapshot.child("Track").getValue(String.class));
+                    mPlayer.playUri(mOperationCallback, dataSnapshot.child("Track").getValue(String.class), 0, 0);
+                    if (difference2 > 0)
+                        mPlayer.seekToPosition(mOperationCallback, (int) difference2);
+                } else if (dataSnapshot.child("Track").getValue(String.class) != hold) {
+                    if (difference2 < sarkiTime) {
+                        Log.d("büyükElseIf !=:", "hold:" + hold + " data:" + dataSnapshot.child("Track").getValue(String.class));
+                        mPlayer.playUri(mOperationCallback, dataSnapshot.child("Track").getValue(String.class), 0, 0);
+                        if (difference2 > 0)
+                            mPlayer.seekToPosition(mOperationCallback, (int) difference2);
+                    } else if (difference2 > sarkiTime) {
+                        Toast.makeText(mContext, "Zaman tutarsizligi", Toast.LENGTH_SHORT).show();
+
+                    }
+
+
+                }
+
+                listViewAdapter.setIsEnable(true);
+               if( mCurrentPlaybackState!=null)
+                   if(mCurrentPlaybackState.isPlaying)
+                       playSong(sizeINFO);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        readTosong.addListenerForSingleValueEvent(listenToSong);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("Resume ", "Girdi");
+
 
     }
 
@@ -447,23 +436,23 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d("onStart", "Girdi");
 
 
     }
 
-    public void play(String myToken) {
+    public void play(final String myToken) {
         if (mPlayer == null) {
-            Config playerConfig = new Config(getApplicationContext(), myToken, CLIENT_ID);
-            // Since the Player is a static singleton owned by the Spotify class, we pass "this" as
-            // the second argument in order to refcount it properly. Note that the method
-            // Spotify.destroyPlayer() also takes an Object argument, which must be the same as the
-            // one passed in here. If you pass different instances to Spotify.getPlayer() and
-            // Spotify.destroyPlayer(), that will definitely result in resource leaks.
+            final Config playerConfig = new Config(getApplicationContext(), myToken, CLIENT_ID);
             mPlayer = Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
                 @Override
                 public void onInitialized(SpotifyPlayer player) {
                     mPlayer.setConnectivityStatus(mOperationCallback, getNetworkConnectivity(Main2Activity.this));
                     // Trigger UI refresh
+                    Log.e("Test  display name: ", playerConfig.displayName);
+                    Log.e("Test brandname", playerConfig.brandName);
+                    Log.e("Test uniqueID", playerConfig.uniqueId);
+                    Log.e("Test getaccessToken", myToken);
                 }
 
                 @Override
@@ -490,26 +479,30 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
         }
     };
 
-
+    private boolean isLoggedIn() {
+        return mPlayer != null && mPlayer.isLoggedIn();
+    }
 
     public void onCikisButton(View view) {
+
+        Log.d("cikisButton", "girdi");
+
         // mPlayer.playUri(mOperationCallback, "spotify:track:1CgUldlwNfY2JQY3sTEwPn", 0, 0);
-        //   AuthenticationClient.clearCookies(this);
-        //    Intent intent = new Intent(this, LoginActivity.class);
-        //    String tut = null;
-        //   intent.putExtra("Token", tut);
+        AuthenticationClient.clearCookies(this);
+        Intent intent = new Intent(this, LoginActivity.class);
+        String tut = null;
+        intent.putExtra("Token", tut);
         if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
             Log.d("song Time: ", "" + mCurrentPlaybackState.positionMs);
-
-
         }
-        //  startActivity(intent);
-        //  finish();
-//        if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
-//            mPlayer.pause(mOperationCallback);
-//        } else {
-//            mPlayer.resume(mOperationCallback);
-//        }
+
+        if (!isLoggedIn()) {
+
+        } else {
+            mPlayer.logout();
+        }
+        startActivity(intent);
+        finish();
 
 
     }
@@ -525,78 +518,98 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
         listView.setAdapter(listViewAdapter);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("onStop", "Girdi");
+        Log.d("isFinishing", " Girmedi");
+        if (isFinishing()) {
+            Log.d("isFinishing", " Girdi holdUserid: " + holdUserid);
+            DatabaseReference oku = FirebaseDatabase.getInstance().getReference().child("Users").child("" + holdUserid);
+            oku.removeValue();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d("onDestroy", " Girdi");
+        unregisterReceiver(mNetworkStateReceiver);
+        if (mPlayer != null) {
+            mPlayer.removeNotificationCallback(Main2Activity.this);
+            mPlayer.removeConnectionStateCallback(Main2Activity.this);
+        }
+        Spotify.destroyPlayer(this);
+
+        super.onDestroy();
+    }
+
     private void fillArrayList(ArrayList<Tracks> tracks, Map<Integer, Track> plyHold) {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         DatabaseReference dbref = db.getReference();
         tracks.clear();
-        for (int index = 0; index < plyHold.size(); index++) {//döngü şarkı size bağlı
+        tracksizeHold = plyHold.size();
+        for (int index = 0; index < tracksizeHold; index++) {//döngü şarkı size bağlı
             Log.d("plyhold: ", plyHold.get(index).album.images.get(0).url);
+
             image = (plyHold.get(index).album.images.get(0).url);
             String hold = plyHold.get(index).external_urls.get("spotify");//track url eldesi(player için)
             String hold2 = hold.substring(31);
             String spotifyURL = "spotify:track:" + hold2;
             // tracks.get(index).setTrackid(index);
 
-            Tracks sarki = new Tracks(spotifyURL, plyHold.get(index).name, plyHold.get(index).artists.get(0).name, image, plyHold.get(index).popularity, index);//içini dolduruyoruz
+            long second = plyHold.get(index).duration_ms / 1000 % 60;
+            long Minutes = plyHold.get(index).duration_ms / (60 * 1000) % 60;
+
+            Tracks sarki = new Tracks(spotifyURL, plyHold.get(index).name, plyHold.get(index).artists.get(0).name, image, 1, index, plyHold.get(index).duration_ms);//içini dolduruyoruz
             tracks.add(sarki);
-//             dbref.child("Tracks").child(index + "").setValue(sarki);
-//            dbref.child("Size").setValue(plyHold.size());
+            //   dbref.child("Tracks").child(index + "").setValue(sarki);
+            //     dbref.child("Size").setValue(plyHold.size());
         }
 
 
-        //Player kısmı
-     /*  try {
-            String hold3="https://open.spotify.com/album/5dN7F9DV0Qg1XRdIgW8rke";
-            String hold = plyHold.get(0).external_urls.get("spotify");
-            String hold2 = plyHold.get(8).preview_url;
-            Uri uri = Uri.parse(hold2);
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mediaPlayer.setDataSource(mContext, uri);//context bakılacak !
-            mediaPlayer.prepareAsync();//sıkıntılı!!
-            mediaPlayer.start();
-
-            if(mediaPlayer.isPlaying()){
-                Log.d("playing TRUE","PLAYYY");
-            } else{
-                Log.d("playing FALSE","NOOOOO");
-
-            }
-
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-
-            @Override
-            public void onPrepared(MediaPlayer player) {
-                player.start();
-            }
-
-        });*/
         listViewAdapter.notifyDataSetChanged();
 
     }
 
     @Override
     public void onPlaybackEvent(PlayerEvent event) {
-
         mCurrentPlaybackState = mPlayer.getPlaybackState();
         mMetadata = mPlayer.getMetadata();
         Log.i("PlaybackEvent", "Player state: " + mCurrentPlaybackState);
-        if(mCurrentPlaybackState.isPlaying)
-            Log.d("Caliyorrrrrrrrrrrrr","if içinde");
-        else {
-            Log.d("Caliyorrrrrrrrrrrrr","if dışında");
-            playSong();
+
+        if (mCurrentPlaybackState.isPlaying && mCurrentPlaybackState != null) {
+            Log.d("Caliyorrrrrrrrrrrrr", "if içinde");
+            deneme.setFlag(true);
+        } else if (!mCurrentPlaybackState.isPlaying) {
+
+            Log.d("Caliyorrrrrrrrrrrrr", "if dışında");
+            Log.d("playSong", "flagControlPlayer" + deneme.getFlag());
+            if (deneme.getFlag()) {
+
+                cik = 0;
+                Log.d("flagControl", "True");
+
+                holdTrackvalue = 0;
+
+                flagControlPlayer = false;
+                controlseekTime(durationTime);
+                deneme.setFlag(false);
+                bayrak = false;
+                deneme.UserVoteRemove(holdUserid);
+
+                playSong(tracksizeHold);
+
+
+                Log.d("playSong", "tracksizehold" + tracksizeHold);
+
+            }
+
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+
         }
         Log.e("PlaybackEvent", "Metadata: " + mMetadata);
 
@@ -608,4 +621,69 @@ public class Main2Activity extends AppCompatActivity implements Player.Notificat
     }
 
 
+    @Override
+    public void onLoggedIn() {
+
+    }
+
+    @Override
+    public void onLoggedOut() {
+
+    }
+
+    @Override
+    public void onLoginFailed(Error error) {
+
+    }
+
+    @Override
+    public void onTemporaryError() {
+
+    }
+
+    @Override
+    public void onConnectionMessage(String s) {
+
+    }
+
+    private void controlseekTime(final long time) {
+        if (mCurrentPlaybackState != null) {
+            if (!mCurrentPlaybackState.isPlaying) {
+                Log.d("onResume", "başladı");
+                DatabaseReference oku4 = FirebaseDatabase.getInstance().getReference().child("Time");
+                ValueEventListener dinle = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        if (dataSnapshot.getChildrenCount() > 0) {
+                            Date endTime = Calendar.getInstance().getTime();
+                            long difHold= endTime.getTime();
+                            long gelenTime=dataSnapshot.child("durationTime").getValue(long.class);
+                            long dif = (dataSnapshot.child("seekTime").getValue(long.class) );//bir onceki sarki suresi=nowPlay
+                            long diffsecond = dif / 1000 % 60;
+                            long differenceMinutes = dif / (60 * 1000) % 60;
+                            Log.d("seekTİmeCOntrol:", "" + (diffsecond + (differenceMinutes * 60)) + " zaman farkı:" + (difHold ) + " zaman:" + ((gelenTime)+ dif));
+
+                            if (dataSnapshot.child("seekTime").getValue(long.class) == null) {
+                            } else if ((gelenTime+ dif) <= (difHold)) {
+                                deneme.RemoveSeekTime();
+                                deneme.SongRemove();
+                                Log.d("onResume", "değişiyor");
+
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                oku4.addListenerForSingleValueEvent(dinle);
+
+
+            }
+        }
+
+    }
 }
