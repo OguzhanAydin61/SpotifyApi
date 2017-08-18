@@ -60,7 +60,7 @@
             android:background="@drawable/handok"
             android:gravity="center"
             android:scrollHorizontally="true"
-            android:text=" " />
+            android:text="" />
         <TextView
             android:id="@+id/OyShow"
             android:layout_width="match_parent"
