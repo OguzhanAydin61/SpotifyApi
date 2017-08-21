@@ -2,8 +2,12 @@
     <string name="app_name">Rate Your Song</string>
     <string name="login_button">Login to Spotify</string>
     <string name="search">Search</string>
-    <string name="action_settings">Setting</string>
+    <string name="action_settings">Logout</string>
     <string name="cover_art_description">Cover art</string>
     <string name="search_hint">Search tracks</string>
     <string name="title_activity_maps">Map</string>
+    <string name="action_add_favourite">Add to Favourites</string>
+    <string name="action_play_next">Play Next</string>
+    <string name="backdrop_title">LOVE MUSIC</string>
+    <string name="backdrop_subtitle">This season top 20 albums</string>
 </resources>
